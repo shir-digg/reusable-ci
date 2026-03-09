@@ -1,0 +1,36 @@
+name: Test Slack Notification
+
+on:
+  workflow_dispatch:  # triggers manually
+
+jobs:
+  test-slack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate Slack webhook secret
+        env:
+          SLACK_TEST_WEBHOOK: ${{ secrets.SLACK_TEST_WEBHOOK }}
+        run: |
+          if [ -z "$SLACK_TEST_WEBHOOK" ]; then
+            echo "SLACK_TEST_WEBHOOK is empty or not configured for this repository/environment."
+            exit 1
+          fi
+
+      - name: Send test Slack message
+        uses: slackapi/slack-github-action@v2.1.1
+        with:
+          webhook: ${{ secrets.SLACK_TEST_WEBHOOK }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "GitHub Actions -> Slack test message successful!",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "This is a test from `${{ github.repository }}`"
+                  }
+                }
+              ]
+            }
